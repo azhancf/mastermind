@@ -58,6 +58,7 @@ module GiveResultsable
   end
 end
 
+# would have combined this with the code creating module for a code and guess module
 # Can check the validity of a player guess
 module CheckGuessValidityable
   private
