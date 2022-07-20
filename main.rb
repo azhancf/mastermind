@@ -1,6 +1,19 @@
 # frozen_string_literal: true
 
-# put unused by both functions back into the computer class
+# features that could be implemented
+# new game
+
+# Creates the code for the game
+module CreateCodeable
+  private
+
+  def create_code
+    digits = Array.new(4)
+    4.times { digits.push(rand(1..6)) }
+    digits.join('')
+  end
+end
+
 # Is able to deal with the results of the guess
 module GiveResultsable
   private
@@ -25,9 +38,7 @@ module GiveResultsable
     puts "Guess ##{guesses}"
     correct_position = 0
     for i in (0..3)
-      if guess.to_s[i] == code.to_s[i]
-        correct_position += 1
-      end
+      correct_position += 1 if guess.to_s[i] == code.to_s[i]
     end
     wrong_position = (guess.to_s.split('') & code.to_s.split('')).length - correct_position
     print_results(correct_position, wrong_position)
@@ -48,6 +59,7 @@ end
 
 # The computer which plays with the player
 class Computer
+  include CreateCodeable
   include GiveResultsable
 
   attr_reader :game_over, :guesses
@@ -58,6 +70,7 @@ class Computer
     @code = create_code
   end
 
+  # the computer's guessing skills sucks but i give up
   def make_guess(code)
     computer_guess = create_code.to_i
     puts "The computer guessed #{computer_guess}"
@@ -83,12 +96,6 @@ class Computer
   private
 
   attr_writer :game_over
-
-  def create_code
-    digits = Array.new(4)
-    4.times { digits.push(rand(1..6)) }
-    digits.join('')
-  end
 end
 
 # The human player which can input and interact with the program
@@ -96,38 +103,54 @@ class Player
   attr_reader :code
 
   def enter_code # check input
-    puts "Enter a code for the computer to guess."
+    puts 'Enter a code for the computer to guess.'
     @code = gets.chomp.to_i
   end
 
-  def check_valid_guess # put in module
+  def check_valid_guess(number) # put in module
+    unless number.zero?
+      unless number.to_s.length == 4
+        return false
+      end
+      number.to_s.each_char do |c|
+        if c.to_i > 6 || c.to_i < 1
+          return false
+        end
+      end
+    end
+    true
   end
 
   def guess # TODO: has to be int from 1111 to 6666
-    gets.chomp.to_i
+    player_guess = -1
+    until check_valid_guess(player_guess)
+      puts 'Enter a guess for a 4 digit code using digits 1 to 6: '
+      player_guess = gets.chomp.to_i
+      puts
+    end
+    player_guess
   end
 end
-
-# TODO: module or instance function for printing instructions, or make some functions as part of the Game class/module
-
-# new game?
 
 computer = Computer.new
 player = Player.new
 
-puts 'Enter 1 for code creator and 2 for guesser: '
-game_type = gets.chomp.to_i # check until 1 or 2
+game_type = 0
+until game_type == 1 || game_type == 2
+  puts 'Enter 1 for code creator and 2 for guesser: '
+  game_type = gets.chomp.to_i
+  puts
+end
+
 if game_type == 1
   player.enter_code
   puts
   until computer.game_over
     computer.make_guess(player.code)
-    # wait for a bit
+    sleep(0.5)
   end
 else
   puts 'Guess the code in 12 tries, type 0 or enter to give up.'
   puts
-  until computer.game_over
-    computer.recieve_guess(player.guess)
-  end
+  computer.recieve_guess(player.guess) until computer.game_over
 end
