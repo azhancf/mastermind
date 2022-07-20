@@ -29,7 +29,8 @@ module GiveResultsable
   end
 
   def print_results(correct_position, wrong_position)
-    puts "There was #{correct_position} in the right position with the corrrect number and #{wrong_position} with the right number but wrong position!"
+    puts "There was #{correct_position} in the right position with the correct number
+    and #{wrong_position} with the right number but wrong position!"
     puts '---------------------------------'
     puts
   end
@@ -37,7 +38,7 @@ module GiveResultsable
   def results(guess, guesses, code)
     puts "Guess ##{guesses}"
     correct_position = 0
-    for i in (0..3)
+    (0..3).each do |i|
       correct_position += 1 if guess.to_s[i] == code.to_s[i]
     end
     wrong_position = (guess.to_s.split('') & code.to_s.split('')).length - correct_position
@@ -54,6 +55,22 @@ module GiveResultsable
     else
       results(guess, guesses, code)
     end
+  end
+end
+
+# Can check the validity of a player guess
+module CheckGuessValidityable
+  private
+
+  def check_valid_guess(number)
+    unless number.zero?
+      return false unless number.to_s.length == 4
+
+      number.to_s.each_char do |c|
+        return false if c.to_i > 6 || c.to_i < 1
+      end
+    end
+    true
   end
 end
 
@@ -100,28 +117,20 @@ end
 
 # The human player which can input and interact with the program
 class Player
+  include CheckGuessValidityable
+
   attr_reader :code
 
-  def enter_code # check input
-    puts 'Enter a code for the computer to guess.'
-    @code = gets.chomp.to_i
-  end
-
-  def check_valid_guess(number) # put in module
-    unless number.zero?
-      unless number.to_s.length == 4
-        return false
-      end
-      number.to_s.each_char do |c|
-        if c.to_i > 6 || c.to_i < 1
-          return false
-        end
-      end
+  def enter_code
+    @code = -1
+    until check_valid_guess(@code)
+      puts 'Enter a code for a 4 digit code using digits 1 to 6: '
+      @code = gets.chomp.to_i
+      puts
     end
-    true
   end
 
-  def guess # TODO: has to be int from 1111 to 6666
+  def guess
     player_guess = -1
     until check_valid_guess(player_guess)
       puts 'Enter a guess for a 4 digit code using digits 1 to 6: '
@@ -136,7 +145,7 @@ computer = Computer.new
 player = Player.new
 
 game_type = 0
-until game_type == 1 || game_type == 2
+until [1, 2].include?(game_type)
   puts 'Enter 1 for code creator and 2 for guesser: '
   game_type = gets.chomp.to_i
   puts
